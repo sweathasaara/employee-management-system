@@ -51,7 +51,6 @@ public class EmployeeApp {
         }
     }
 
-    // CREATE
     public static void addEmployee() {
     try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
@@ -62,7 +61,6 @@ public class EmployeeApp {
         System.out.print("Enter Salary: ");
         double salary = sc.nextDouble();
 
-        // show departments
         showDepartments();
 
         System.out.print("Enter Department ID: ");
@@ -84,7 +82,7 @@ public class EmployeeApp {
     }
 }
 
-    // READ
+
     public static void showEmployees() {
         try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
@@ -219,7 +217,7 @@ public static void rejectLeave() {
         System.out.println(e);
     }
 }
-    // UPDATE
+
     public static void updateEmployee() {
     try {
        
@@ -236,7 +234,7 @@ public static void rejectLeave() {
         System.out.print("Choose option: ");
 
         int choice = sc.nextInt();
-        sc.nextLine(); // clear buffer
+        sc.nextLine(); 
 
         String query = "";
         PreparedStatement ps = null;
@@ -309,7 +307,7 @@ public static void rejectLeave() {
         System.out.println(e);
     }
 }
-    // DELETE
+
     public static void deleteEmployee() {
         try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
