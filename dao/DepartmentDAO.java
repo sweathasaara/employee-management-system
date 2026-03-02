@@ -20,29 +20,25 @@ public class DepartmentDAO {
         }
     }
 
-    public void showDepartments() {
-        try (Connection con = DBConnection.getConnection()) {
+   public String showDepartments() {
+    StringBuilder result = new StringBuilder();
 
-            String query = "SELECT * FROM departments";
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(query);
+    try (Connection con = DBConnection.getConnection()) {
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM departments");
 
-            System.out.println("+----+--------------------------+");
-            System.out.printf("| %-3s | %-24s |\n", "ID", "Department");
-            System.out.println("+----+--------------------------+");
+        result.append("Departments:\n");
 
-            while (rs.next()) {
-                System.out.printf("| %-3d | %-24s |\n",
-                        rs.getInt("id"),
-                        rs.getString("name"));
-            }
-
-            System.out.println("+----+--------------------------+");
-
-        } catch (Exception e) {
-            System.out.println(e);
+        while (rs.next()) {
+            result.append(rs.getInt("id") + " - " + rs.getString("name") + "\n");
         }
+
+    } catch (Exception e) {
+        return e.toString();
     }
+
+    return result.toString();
+}
     public void deleteDepartment(int id) {
     try (Connection con = DBConnection.getConnection()) {
 

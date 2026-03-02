@@ -23,32 +23,35 @@ public class LeaveDAO {
             System.out.println(e);
         }
     }
-    public void viewPendingLeaves() {
+   public String viewPendingLeaves() {
+    StringBuilder result = new StringBuilder();
+
     try (Connection con = DBConnection.getConnection()) {
 
         String query = "SELECT * FROM leaves WHERE status='pending'";
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
 
-        System.out.println("+----+----------+----------------------+-----------+");
-        System.out.printf("| %-2s | %-8s | %-20s | %-9s |\n", "ID", "EmpID", "Reason", "Status");
-        System.out.println("+----+----------+----------------------+-----------+");
+        StringBuilder sb = new StringBuilder();
 
-        while (rs.next()) {
-            System.out.printf("| %-2d | %-8d | %-20s | %-9s |\n",
-                    rs.getInt("id"),
-                    rs.getInt("employee_id"),
-                    rs.getString("reason"),
-                    rs.getString("status"));
-        }
+while(rs.next()) {
+    sb.append(rs.getInt("id")).append(" - ")
+      .append(rs.getInt("employee_id")).append(" - ")
+      .append(rs.getString("reason")).append(" - ")
+      .append(rs.getString("status")).append("\n");
+}
 
-        System.out.println("+----+----------+----------------------+-----------+");
+return sb.toString();
 
     } catch (Exception e) {
-        System.out.println(e);
+        return e.toString();
     }
+
+
 }
-public void showAllLeaves() {
+public String showAllLeaves() {
+    StringBuilder result = new StringBuilder();
+
     try (Connection con = DBConnection.getConnection()) {
 
         String query = "SELECT l.id, e.name, l.reason, l.status " +
@@ -57,54 +60,39 @@ public void showAllLeaves() {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
 
-        System.out.println("+----+----------------------+----------------------+-----------+");
-        System.out.printf("| %-2s | %-20s | %-20s | %-9s |\n", "ID", "Name", "Reason", "Status");
-        System.out.println("+----+----------------------+----------------------+-----------+");
-
         while (rs.next()) {
-            System.out.printf("| %-2d | %-20s | %-20s | %-9s |\n",
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("reason"),
-                    rs.getString("status"));
+            result.append("ID: ").append(rs.getInt("id"))
+                  .append(" Employee: ").append(rs.getString("name"))
+                  .append(" Reason: ").append(rs.getString("reason"))
+                  .append(" Status: ").append(rs.getString("status"))
+                  .append("\n");
         }
 
-        System.out.println("+----+----------------------+----------------------+-----------+");
-
     } catch (Exception e) {
-        System.out.println(e);
+        return e.toString();
     }
+
+    return result.toString();
 }
-public void approveLeave(Scanner sc) {
+public void approveLeave(int id) {
     try (Connection con = DBConnection.getConnection()) {
-
-        System.out.print("Enter Leave ID: ");
-        int id = sc.nextInt();
-
         String query = "UPDATE leaves SET status='approved' WHERE id=?";
         PreparedStatement ps = con.prepareStatement(query);
         ps.setInt(1, id);
-
         ps.executeUpdate();
         System.out.println("Leave approved!");
-
     } catch (Exception e) {
         System.out.println(e);
     }
 }
-public void rejectLeave(Scanner sc) {
+
+public void rejectLeave(int id) {
     try (Connection con = DBConnection.getConnection()) {
-
-        System.out.print("Enter Leave ID: ");
-        int id = sc.nextInt();
-
         String query = "UPDATE leaves SET status='rejected' WHERE id=?";
         PreparedStatement ps = con.prepareStatement(query);
         ps.setInt(1, id);
-
         ps.executeUpdate();
         System.out.println("Leave rejected!");
-
     } catch (Exception e) {
         System.out.println(e);
     }
