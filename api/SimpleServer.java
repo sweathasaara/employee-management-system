@@ -20,20 +20,18 @@ public class SimpleServer {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        // EMPLOYEE ROUTE
         server.createContext("/employees", SimpleServer::handleEmployees);
 
-        // DEPARTMENT ROUTE
+
         server.createContext("/departments", SimpleServer::handleDepartments);
 
-        // LEAVE ROUTE
         server.createContext("/leaves", SimpleServer::handleLeaves);
 
         server.start();
         System.out.println("Server started at http://localhost:8080");
     }
 
-    // ================= EMPLOYEE HANDLER =================
+  
     static void handleEmployees(HttpExchange exchange) throws IOException {
 
         String method = exchange.getRequestMethod();
@@ -76,7 +74,7 @@ public class SimpleServer {
         }
     }
 
-    // ================= DEPARTMENT HANDLER =================
+
     static void handleDepartments(HttpExchange exchange) throws IOException {
 
         String method = exchange.getRequestMethod();
@@ -96,7 +94,6 @@ public class SimpleServer {
         }
     }
 
-    // ================= LEAVE HANDLER =================
     static void handleLeaves(HttpExchange exchange) throws IOException {
 
         String method = exchange.getRequestMethod();
@@ -129,7 +126,6 @@ public class SimpleServer {
         }
     }
 
-    // ================= UTILITY METHODS =================
 
     static void send(HttpExchange exchange, int status, String response) throws IOException {
         exchange.getResponseHeaders().add("Content-Type", "application/json");
