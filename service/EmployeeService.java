@@ -45,6 +45,9 @@ public class EmployeeService {
     public String showAllLeaves() {
     return leaveDAO.showAllLeaves();
 }
+public String showDepartments() {
+    return deptDAO.showDepartments();
+}
 
     public void approveLeave(int id) {
         leaveDAO.approveLeave(id);

@@ -20,31 +20,38 @@ public class EmployeeDAO {
         System.out.println(e);
     }
 }
-
-    public String showEmployees() {
-    StringBuilder result = new StringBuilder();
+public String showEmployees() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
 
     try (Connection con = DBConnection.getConnection()) {
 
-        String query = "SELECT e.id, e.name, d.name AS department, e.salary " +
+        String query = "SELECT e.id, e.name, d.name as dept, e.salary " +
                        "FROM employees e JOIN departments d ON e.department_id = d.id";
 
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
 
+        boolean first = true;
+
         while (rs.next()) {
-            result.append("ID: ").append(rs.getInt("id"))
-                  .append(" Name: ").append(rs.getString("name"))
-                  .append(" Dept: ").append(rs.getString("department"))
-                  .append(" Salary: ").append(rs.getDouble("salary"))
-                  .append("\n");
+            if (!first) sb.append(",");
+            first = false;
+
+            sb.append("{")
+              .append("\"id\":").append(rs.getInt("id")).append(",")
+              .append("\"name\":\"").append(rs.getString("name")).append("\",")
+              .append("\"department\":\"").append(rs.getString("dept")).append("\",")
+              .append("\"salary\":").append(rs.getDouble("salary"))
+              .append("}");
         }
 
     } catch (Exception e) {
-        return e.toString();
+        return "{\"error\":\"" + e.getMessage() + "\"}";
     }
 
-    return result.toString();
+    sb.append("]");
+    return sb.toString();
 }
     public void updateEmployee(int id, String name, double salary, int deptId) {
     try (Connection con = DBConnection.getConnection()) {

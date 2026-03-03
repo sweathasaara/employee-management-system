@@ -50,7 +50,9 @@ return sb.toString();
 
 }
 public String showAllLeaves() {
-    StringBuilder result = new StringBuilder();
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
 
     try (Connection con = DBConnection.getConnection()) {
 
@@ -60,20 +62,28 @@ public String showAllLeaves() {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
 
+        boolean first = true;
+
         while (rs.next()) {
-            result.append("ID: ").append(rs.getInt("id"))
-                  .append(" Employee: ").append(rs.getString("name"))
-                  .append(" Reason: ").append(rs.getString("reason"))
-                  .append(" Status: ").append(rs.getString("status"))
-                  .append("\n");
+
+            if (!first) sb.append(",");
+            first = false;
+
+            sb.append("{")
+              .append("\"id\":").append(rs.getInt("id")).append(",")
+              .append("\"employee\":\"").append(rs.getString("name")).append("\",")
+              .append("\"reason\":\"").append(rs.getString("reason")).append("\",")
+              .append("\"status\":\"").append(rs.getString("status")).append("\"")
+              .append("}");
         }
 
     } catch (Exception e) {
-        return e.toString();
+        return "{\"error\":\"" + e.getMessage() + "\"}";
     }
 
-    return result.toString();
-}
+    sb.append("]");
+    return sb.toString();
+} 
 public void approveLeave(int id) {
     try (Connection con = DBConnection.getConnection()) {
         String query = "UPDATE leaves SET status='approved' WHERE id=?";

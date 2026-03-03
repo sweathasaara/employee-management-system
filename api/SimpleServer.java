@@ -2,10 +2,15 @@ package api;
 
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpExchange;
-import java.io.*;
-import java.net.InetSocketAddress;
 
 import service.EmployeeService;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SimpleServer {
 
@@ -15,79 +20,153 @@ public class SimpleServer {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        // 1 ADD EMPLOYEE
-        server.createContext("/employee/add", e -> {
-            service.addEmployee("Sara", 40000, 101);
-            send(e, "Employee Added");
-        });
+        // EMPLOYEE ROUTE
+        server.createContext("/employees", SimpleServer::handleEmployees);
 
-        // 2 SHOW EMPLOYEES
-        server.createContext("/employee/show", e -> {
-            send(e, service.showEmployees());
-        });
+        // DEPARTMENT ROUTE
+        server.createContext("/departments", SimpleServer::handleDepartments);
 
-        // 3 UPDATE
-        server.createContext("/employee/update", e -> {
-            service.updateEmployee(1, "Updated", 50000, 102);
-            send(e, "Employee Updated");
-        });
-
-        // 4 DELETE
-        server.createContext("/employee/delete", e -> {
-            service.deleteEmployee(1);
-            send(e, "Employee Deleted");
-        });
-
-        // 5 ADD DEPT
-        server.createContext("/department/add", e -> {
-            service.addDepartment("New Dept");
-            send(e, "Department Added");
-        });
-
-        // 6 DELETE DEPT
-        server.createContext("/department/delete", e -> {
-            service.deleteDepartment(101);
-            send(e, "Department Deleted");
-        });
-
-        // 7 APPLY LEAVE
-        server.createContext("/leave/apply", e -> {
-            service.applyLeave(1, "Sick Leave");
-            send(e, "Leave Applied");
-        });
-
-        // 8 VIEW PENDING
-       server.createContext("/leave/pending", e -> {
-            send(e, service.showEmployees());
-        });
-
-
-        // 9 SHOW LEAVES
-        server.createContext("/leave/show", e -> {
-            send(e, service.showAllLeaves());
-        });
-
-        // 10 APPROVE
-        server.createContext("/leave/approve", e -> {
-            service.approveLeave(1);
-            send(e, "Leave Approved");
-        });
-
-        // 11 REJECT
-        server.createContext("/leave/reject", e -> {
-            service.rejectLeave(2);
-            send(e, "Leave Rejected");
-        });
+        // LEAVE ROUTE
+        server.createContext("/leaves", SimpleServer::handleLeaves);
 
         server.start();
-        System.out.println("Server running at http://localhost:8080");
+        System.out.println("Server started at http://localhost:8080");
     }
 
-    static void send(HttpExchange e, String res) throws IOException {
-        e.getResponseHeaders().add("Content-Type", "text/plain");
-        e.sendResponseHeaders(200, res.length());
-        OutputStream os = e.getResponseBody();
-        os.write(res.getBytes());
+    // ================= EMPLOYEE HANDLER =================
+    static void handleEmployees(HttpExchange exchange) throws IOException {
+
+        String method = exchange.getRequestMethod();
+
+        if (method.equals("GET")) {
+            String response = service.showEmployees();
+            send(exchange, 200, response);
+
+        } else if (method.equals("POST")) {
+            String body = readBody(exchange);
+            Map<String, String> json = parseJson(body);
+
+            service.addEmployee(
+                    json.get("name"),
+                    Double.parseDouble(json.get("salary")),
+                    Integer.parseInt(json.get("deptId"))
+            );
+
+            send(exchange, 201, "{\"message\":\"Employee created\"}");
+
+        } else if (method.equals("PUT")) {
+            String body = readBody(exchange);
+            Map<String, String> json = parseJson(body);
+
+            service.updateEmployee(
+                    Integer.parseInt(json.get("id")),
+                    json.get("name"),
+                    Double.parseDouble(json.get("salary")),
+                    Integer.parseInt(json.get("deptId"))
+            );
+
+            send(exchange, 200, "{\"message\":\"Employee updated\"}");
+
+        } else if (method.equals("DELETE")) {
+            Map<String, String> query = parseQuery(exchange.getRequestURI().getQuery());
+
+            service.deleteEmployee(Integer.parseInt(query.get("id")));
+
+            send(exchange, 200, "{\"message\":\"Employee deleted\"}");
+        }
+    }
+
+    // ================= DEPARTMENT HANDLER =================
+    static void handleDepartments(HttpExchange exchange) throws IOException {
+
+        String method = exchange.getRequestMethod();
+
+      if (method.equals("POST")) {
+            String body = readBody(exchange);
+            Map<String, String> json = parseJson(body);
+
+            service.addDepartment(json.get("name"));
+            send(exchange, 201, "{\"message\":\"Department created\"}");
+
+        } else if (method.equals("DELETE")) {
+            Map<String, String> query = parseQuery(exchange.getRequestURI().getQuery());
+
+            service.deleteDepartment(Integer.parseInt(query.get("id")));
+            send(exchange, 200, "{\"message\":\"Department deleted\"}");
+        }
+    }
+
+    // ================= LEAVE HANDLER =================
+    static void handleLeaves(HttpExchange exchange) throws IOException {
+
+        String method = exchange.getRequestMethod();
+        Map<String, String> query = parseQuery(exchange.getRequestURI().getQuery());
+
+        if (method.equals("GET")) {
+            send(exchange, 200, service.showAllLeaves());
+
+        } else if (method.equals("POST")) {
+            String body = readBody(exchange);
+            Map<String, String> json = parseJson(body);
+
+            service.applyLeave(
+                    Integer.parseInt(json.get("empId")),
+                    json.get("reason")
+            );
+
+            send(exchange, 201, "{\"message\":\"Leave applied\"}");
+
+        } else if (method.equals("PUT")) {
+            int id = Integer.parseInt(query.get("id"));
+            String status = query.get("status");
+
+            if (status.equals("approved"))
+                service.approveLeave(id);
+            else
+                service.rejectLeave(id);
+
+            send(exchange, 200, "{\"message\":\"Leave updated\"}");
+        }
+    }
+
+    // ================= UTILITY METHODS =================
+
+    static void send(HttpExchange exchange, int status, String response) throws IOException {
+        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.sendResponseHeaders(status, response.getBytes().length);
+        OutputStream os = exchange.getResponseBody();
+        os.write(response.getBytes());
         os.close();
+    }
+
+    static String readBody(HttpExchange exchange) throws IOException {
+        InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+        BufferedReader br = new BufferedReader(isr);
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null)
+            sb.append(line);
+        return sb.toString();
+    }
+
+    static Map<String, String> parseQuery(String query) {
+        Map<String, String> map = new HashMap<>();
+        if (query == null) return map;
+
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            map.put(pair[0], URLDecoder.decode(pair[1], StandardCharsets.UTF_8));
+        }
+        return map;
+    }
+
+    static Map<String, String> parseJson(String json) {
+        Map<String, String> map = new HashMap<>();
+        json = json.replaceAll("[{}\"]", "");
+        for (String pair : json.split(",")) {
+            String[] keyValue = pair.split(":");
+            map.put(keyValue[0].trim(), keyValue[1].trim());
+        }
+        return map;
     }
 }
