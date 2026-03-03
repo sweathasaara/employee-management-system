@@ -24,8 +24,6 @@ public class EmployeeService {
     public void deleteEmployee(int id) {
         empDAO.deleteEmployee(id);
     }
-
-    // DEPARTMENT
     public void addDepartment(String name) {
         deptDAO.addDepartment(name);
     }
