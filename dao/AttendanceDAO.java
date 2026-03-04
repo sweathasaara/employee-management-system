@@ -2,7 +2,7 @@ package dao;
 
 import java.sql.*;
 import util.DBConnection;
-
+import dao.AttendanceDAO;
 public class AttendanceDAO {
 
     public void markAttendance(int empId, String date, String status) {
@@ -22,7 +22,11 @@ public class AttendanceDAO {
             System.out.println(e);
         }
     }
-    public void viewAttendance() {
+  public String viewAttendance() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+
     try (Connection con = DBConnection.getConnection()) {
 
         String query = "SELECT a.id, e.name, a.date, a.status " +
@@ -31,22 +35,26 @@ public class AttendanceDAO {
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
 
-        System.out.println("+----+----------------------+------------+----------+");
-        System.out.printf("| %-2s | %-20s | %-10s | %-8s |\n", "ID", "Name", "Date", "Status");
-        System.out.println("+----+----------------------+------------+----------+");
+        boolean first = true;
 
         while (rs.next()) {
-            System.out.printf("| %-2d | %-20s | %-10s | %-8s |\n",
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("date"),
-                    rs.getString("status"));
+
+            if (!first) sb.append(",");
+            first = false;
+
+            sb.append("{")
+              .append("\"id\":").append(rs.getInt("id")).append(",")
+              .append("\"employee\":\"").append(rs.getString("name")).append("\",")
+              .append("\"date\":\"").append(rs.getString("date")).append("\",")
+              .append("\"status\":\"").append(rs.getString("status")).append("\"")
+              .append("}");
         }
 
-        System.out.println("+----+----------------------+------------+----------+");
-
     } catch (Exception e) {
-        System.out.println(e);
+        return "{\"error\":\"" + e.getMessage() + "\"}";
     }
+
+    sb.append("]");
+    return sb.toString();
 }
 }

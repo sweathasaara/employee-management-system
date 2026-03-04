@@ -3,12 +3,16 @@ package service;
 import dao.EmployeeDAO;
 import dao.DepartmentDAO;
 import dao.LeaveDAO;
+import dao.AttendanceDAO;
+
+
 
 public class EmployeeService {
 
     EmployeeDAO empDAO = new EmployeeDAO();
     DepartmentDAO deptDAO = new DepartmentDAO();
     LeaveDAO leaveDAO = new LeaveDAO();
+    private AttendanceDAO attendanceDAO = new AttendanceDAO();
 
 
     public void addEmployee(String name, double salary, int deptId) {
@@ -24,6 +28,8 @@ public class EmployeeService {
     public void deleteEmployee(int id) {
         empDAO.deleteEmployee(id);
     }
+
+    // DEPARTMENT
     public void addDepartment(String name) {
         deptDAO.addDepartment(name);
     }
@@ -54,4 +60,11 @@ public String showDepartments() {
     public void rejectLeave(int id) {
         leaveDAO.rejectLeave(id);
     }
+    public void markAttendance(int empId, String date, String status) {
+    attendanceDAO.markAttendance(empId, date, status);
+}
+
+public String viewAttendance() {
+    return attendanceDAO.viewAttendance();
+}
 }
