@@ -20,6 +20,29 @@ public class EmployeeDAO {
         System.out.println(e);
     }
 }
+public int authenticateEmployee(String username,String password){
+
+    try(Connection con = DBConnection.getConnection()){
+
+        String query = "SELECT id FROM employees WHERE username=? AND password=?";
+
+        PreparedStatement ps = con.prepareStatement(query);
+
+        ps.setString(1,username);
+        ps.setString(2,password);
+
+        ResultSet rs = ps.executeQuery();
+
+        if(rs.next()){
+            return rs.getInt("id");
+        }
+
+    }catch(Exception e){
+        System.out.println(e);
+    }
+
+    return -1;
+}
 public String showEmployees() {
     StringBuilder sb = new StringBuilder();
     sb.append("[");

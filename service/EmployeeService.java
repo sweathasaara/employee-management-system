@@ -14,7 +14,9 @@ public class EmployeeService {
     LeaveDAO leaveDAO = new LeaveDAO();
     private AttendanceDAO attendanceDAO = new AttendanceDAO();
 
-
+public int authenticateEmployee(String username,String password){
+    return empDAO.authenticateEmployee(username,password);
+}
     public void addEmployee(String name, double salary, int deptId) {
         empDAO.addEmployee(name, salary, deptId);
     }
