@@ -8,9 +8,7 @@ public class EmployeeApp {
     static final String PASSWORD = "123456";
 
     static Scanner sc = new Scanner(System.in);
-
     public static void main(String[] args) {
-
         while (true) {
             System.out.println("\n--- Employee Management System ---");
             System.out.println("1. Add Employee");
@@ -119,12 +117,9 @@ System.out.println("+----+----------------------+-------------------------------
 
         String query = "INSERT INTO leaves(employee_id, reason, status) VALUES (?, ?, 'pending')";
         PreparedStatement ps = con.prepareStatement(query);
-
         ps.setInt(1, empId);
         ps.setString(2, reason);
-
         ps.executeUpdate();
-
         System.out.println("Leave applied successfully!");
 
     } catch (Exception e) {
@@ -318,9 +313,7 @@ public static void rejectLeave() {
             PreparedStatement ps = con.prepareStatement(query);
 
             ps.setInt(1, id);
-
             int rows = ps.executeUpdate();
-
             if (rows > 0)
                 System.out.println("Employee deleted successfully!");
             else
@@ -390,6 +383,6 @@ public static void deleteDepartment() {
 
     } catch (Exception e) {
         System.out.println(e);
-    }
+    } 
 }
 }
